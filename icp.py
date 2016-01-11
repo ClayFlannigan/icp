@@ -47,7 +47,7 @@ def nearest_neighbor(src, dst):
         src: Nx3 array of points
         dst: Nx3 array of points
     Output:
-        distances: Euclidean distances of the nearest neighbor
+        distances: Euclidean distances (errors) of the nearest neighbor
         indecies: dst indecies of the nearest neighbor
     '''
 
@@ -63,7 +63,7 @@ def nearest_neighbor(src, dst):
                 distances[i] = dist
     return distances, indecies
 
-def icp(A, B, init_pose=None, max_iterations = 20, tolerance = 0.001):
+def icp(A, B, init_pose=None, max_iterations=20, tolerance=0.001):
     '''
     The Iterative Closest Point method
     Input:
@@ -74,7 +74,7 @@ def icp(A, B, init_pose=None, max_iterations = 20, tolerance = 0.001):
         tolerance: convergence criteria
     Output:
         T: final homogeneous transformation
-        mean_error: final mean distance error
+        distances: Euclidean distances (errors) of the nearest neighbor
     '''
 
     # make points homogeneous, copy them so as to maintain the originals
