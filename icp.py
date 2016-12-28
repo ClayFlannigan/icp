@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.spatial.distance import cdist
 
 def best_fit_transform(A, B):
     '''
@@ -47,21 +48,14 @@ def nearest_neighbor(src, dst):
         src: Nx3 array of points
         dst: Nx3 array of points
     Output:
-        distances: Euclidean distances (errors) of the nearest neighbor
-        indecies: dst indecies of the nearest neighbor
+        distances: Euclidean distances of the nearest neighbor
+        indices: dst indices of the nearest neighbor
     '''
 
-    indecies = np.zeros(src.shape[0], dtype=np.int)
-    distances = np.zeros(src.shape[0])
-    for i, s in enumerate(src):
-        min_dist = np.inf
-        for j, d in enumerate(dst):
-            dist = np.linalg.norm(s-d)
-            if dist < min_dist:
-                min_dist = dist
-                indecies[i] = j
-                distances[i] = dist
-    return distances, indecies
+    all_dists = cdist(src, dst, 'euclidean')
+    indices = all_dists.argmin(axis=1)
+    distances = all_dists[np.arange(all_dists.shape[0]), indices]
+    return distances, indices
 
 def icp(A, B, init_pose=None, max_iterations=20, tolerance=0.001):
     '''
@@ -105,7 +99,7 @@ def icp(A, B, init_pose=None, max_iterations=20, tolerance=0.001):
             break
         prev_error = mean_error
 
-    # calculcate final tranformation
+    # calculate final transformation
     T,_,_ = best_fit_transform(A, src[0:3,:].T)
 
     return T, distances
