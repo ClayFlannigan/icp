@@ -1,7 +1,5 @@
 import numpy as np
 import time
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import icp
 
 # Constants
@@ -21,6 +19,7 @@ def rotation_matrix(axis, theta):
     return np.array([[a*a+b*b-c*c-d*d, 2*(b*c-a*d), 2*(b*d+a*c)],
                   [2*(b*c+a*d), a*a+c*c-b*b-d*d, 2*(c*d-a*b)],
                   [2*(b*d-a*c), 2*(c*d+a*b), a*a+d*d-b*b-c*c]])
+
 
 def test_best_fit():
 
@@ -58,6 +57,7 @@ def test_best_fit():
 
     return
 
+
 def test_icp():
 
     # Generate a random dataset
@@ -91,13 +91,6 @@ def test_icp():
 
         # Transform C
         C = np.dot(T, C.T).T
-
-        # fig = plt.figure()
-        # ax = Axes3D(fig)
-        # ax.scatter(A[:,0], A[:,1], A[:,2], c='r', marker='o')
-        # ax.scatter(B[:,0], B[:,1], B[:,2], c='b', marker='o')
-        # ax.scatter(C[:,0], C[:,1], C[:,2], edgecolors='g', marker='s', facecolors='none', s=80)
-        # plt.show()
 
         assert np.allclose(C[:,0:3], A, atol=6*noise_sigma)       # T should transform B (or C) to A
         assert np.allclose(T[0:3,0:3].T, R, atol=6*noise_sigma)   # T and R should be inverses
