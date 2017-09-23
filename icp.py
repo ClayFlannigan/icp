@@ -67,7 +67,7 @@ def nearest_neighbor(src, dst):
 
 def icp(A, B, init_pose=None, max_iterations=20, tolerance=0.001):
     '''
-    The Iterative Closest Point method
+    The Iterative Closest Point method: finds best-fit transform that maps points A on to points B
     Input:
         A: Nxm numpy array of source mD points
         B: Nxm numpy array of destination mD point
@@ -77,6 +77,7 @@ def icp(A, B, init_pose=None, max_iterations=20, tolerance=0.001):
     Output:
         T: final homogeneous transformation that maps A on to B
         distances: Euclidean distances (errors) of the nearest neighbor
+        i: number of iterations to converge
     '''
 
     assert A.shape == B.shape
@@ -107,7 +108,7 @@ def icp(A, B, init_pose=None, max_iterations=20, tolerance=0.001):
         src = np.dot(T, src)
 
         # check error
-        mean_error = np.sum(distances) / distances.size
+        mean_error = np.mean(distances)
         if np.abs(prev_error - mean_error) < tolerance:
             break
         prev_error = mean_error
