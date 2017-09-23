@@ -3,7 +3,7 @@ import time
 import icp
 
 # Constants
-N = 1000                                    # number of random points in the dataset
+N = 10                                    # number of random points in the dataset
 num_tests = 100                             # number of test iterations
 dim = 3                                     # number of dimensions of the points
 noise_sigma = .01                           # standard deviation error to be added
@@ -34,24 +34,30 @@ def test_best_fit():
 
         # Translate
         t = np.random.rand(dim)*translation
-        B = B + t
+        B += t
 
         # Rotate
         R = rotation_matrix(np.random.rand(dim), np.random.rand()*rotation)
         B = np.dot(R, B.T).T
+
+        # Add noise
+        B += np.random.randn(N, dim) * noise_sigma
 
         # Find best fit transform
         start = time.time()
         T, R1, t1 = icp.best_fit_transform(B, A)
         total_time += time.time() - start
 
-        # make C a homogeneous representation of B
+        # Make C a homogeneous representation of B
         C = np.ones((N, 4))
         C[:,0:3] = B
 
-        assert np.allclose(np.dot(T, C.T).T[:,0:3], A)  # T should transform B to A
-        assert np.allclose(-t1, t)                      # t and t1 should be inverses
-        assert np.allclose(R1.T, R)                     # R and R1 should be inverses
+        # Transform C
+        C = np.dot(T, C.T).T
+
+        assert np.allclose(C[:,0:3], A, atol=6*noise_sigma) # T should transform B (or C) to A
+        assert np.allclose(-t1, t, atol=6*noise_sigma)      # t and t1 should be inverses
+        assert np.allclose(R1.T, R, atol=6*noise_sigma)     # R and R1 should be inverses
 
     print('best fit time: {:.3}'.format(total_time/num_tests))
 
@@ -71,18 +77,21 @@ def test_icp():
 
         # Translate
         t = np.random.rand(dim)*translation
-        B = B + t
+        B += t
 
         # Rotate
         R = rotation_matrix(np.random.rand(dim), np.random.rand() * rotation)
         B = np.dot(R, B.T).T
 
         # Add noise
-        B = B + np.random.randn(N, dim) * noise_sigma
+        B += np.random.randn(N, dim) * noise_sigma
+
+        # Shuffle to disrupt correspondence
+        np.random.shuffle(B)
 
         # Run ICP
         start = time.time()
-        T, d, i = icp.icp(B, A, tolerance=0.000001)
+        T, distances, iterations = icp.icp(B, A, tolerance=0.000001)
         total_time += time.time() - start
 
         # Make C a homogeneous representation of B
@@ -92,9 +101,9 @@ def test_icp():
         # Transform C
         C = np.dot(T, C.T).T
 
-        assert np.allclose(C[:,0:3], A, atol=6*noise_sigma)       # T should transform B (or C) to A
-        assert np.allclose(T[0:3,0:3].T, R, atol=6*noise_sigma)   # T and R should be inverses
-        assert np.allclose(-T[0:3,3], t, atol=6*noise_sigma)      # T and t should be inverses
+        assert np.mean(distances) < 6*noise_sigma                   # mean error should be small
+        assert np.allclose(T[0:3,0:3].T, R, atol=6*noise_sigma)     # T and R should be inverses
+        assert np.allclose(-T[0:3,3], t, atol=6*noise_sigma)        # T and t should be inverses
 
     print('icp time: {:.3}'.format(total_time/num_tests))
 
