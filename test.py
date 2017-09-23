@@ -82,7 +82,7 @@ def test_icp():
 
         # Run ICP
         start = time.time()
-        T, d = icp.icp(B, A, tolerance=0.000001)
+        T, d, i = icp.icp(B, A, tolerance=0.000001)
         total_time += time.time() - start
 
         # Make C a homogeneous representation of B
