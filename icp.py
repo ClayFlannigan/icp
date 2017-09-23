@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.spatial.distance import cdist
+from sklearn.neighbors import NearestNeighbors
 
 def best_fit_transform(A, B):
     '''
@@ -52,10 +52,10 @@ def nearest_neighbor(src, dst):
         indices: dst indices of the nearest neighbor
     '''
 
-    all_dists = cdist(src, dst, 'euclidean')
-    indices = all_dists.argmin(axis=1)
-    distances = all_dists[np.arange(all_dists.shape[0]), indices]
-    return distances, indices
+    neigh = NearestNeighbors(n_neighbors=1)
+    neigh.fit(dst)
+    distances, indices = neigh.kneighbors(src, return_distance=True)
+    return distances.ravel(), indices.ravel()
 
 def icp(A, B, init_pose=None, max_iterations=20, tolerance=0.001):
     '''
